@@ -8,7 +8,7 @@ import android.speech.RecognitionListener;
 import android.speech.SpeechRecognizer;
 import android.util.Log;
 
-import com.example.voicerecognizerapp.RecognitionResultsListener;
+import com.example.voicerecognizerapp.Listener.RecognitionResultsListener;
 
 import java.util.ArrayList;
 

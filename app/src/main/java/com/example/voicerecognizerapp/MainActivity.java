@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
@@ -13,9 +15,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
-import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -24,14 +24,20 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.voicerecognizerapp.Listener.RecognitionResultsListener;
+import com.example.voicerecognizerapp.adapter.ResultsAdapter;
+import com.example.voicerecognizerapp.model.Item;
+import com.example.voicerecognizerapp.service.retrofit.RetrofitService;
+import com.example.voicerecognizerapp.service.retrofit.SearchService;
 import com.example.voicerecognizerapp.service.voice.VoiceRecognizerService;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+
+import retrofit2.Retrofit;
 
 public class MainActivity extends AppCompatActivity implements RecognitionResultsListener {
     private static final String TAG = "MainActivity";
@@ -44,12 +50,17 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
     private VoiceRecognizerService recognizerService;
     private ConstraintLayout main_layout;
     private ImageView ivBtRecognizer;
+    private RecyclerView rvResults;
+    private ResultsAdapter mAdapter;
+
+    private RetrofitService mRetrofitService;
+    private SearchService mSearchService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        rvResults = findViewById(R.id.rv_results);
         etSearch = findViewById(R.id.et_search);
         main_layout = findViewById(R.id.main_background);
         btRecognizer = findViewById(R.id.bt_recognizer);
@@ -57,6 +68,15 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
         recognizerService = new VoiceRecognizerService(this,this);
         verificaPermicoes();
         recognizerService = new VoiceRecognizerService(getApplicationContext(),this);
+
+//        mRetrofitService = new RetrofitService();
+//        mSearchService = mRetrofitService.getSearchService();
+        Item item = new Item();
+        List<Item> items = new ArrayList<>();
+        for(int i = 0;i < 20;i++){
+            items.add(item);
+        }
+        initRv(items);
         btRecognizer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -81,6 +101,14 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
                 return false;
             }
         });
+    }
+
+    private void initRv(List<Item> list) {
+        mAdapter = new ResultsAdapter(list);
+        LinearLayoutManager llm = new LinearLayoutManager(getBaseContext(),LinearLayoutManager.VERTICAL,false);
+        rvResults.setLayoutManager(llm);
+        rvResults.setHasFixedSize(true);
+        rvResults.setAdapter(mAdapter);
     }
 
     public void hideKeyboard() {
@@ -168,6 +196,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
     @Override
     public void results(String txt) {
         etSearch.setText(txt);
+//        search(txt);
     }
 
     @Override
@@ -176,4 +205,8 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
         btRecognizer.setClickable(true);
         ivBtRecognizer.setClickable(true);
     }
+    private void search(String txt){
+        mSearchService.search(txt);
+    }
+
 }

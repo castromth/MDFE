@@ -1,4 +1,4 @@
-package com.example.voicerecognizerapp;
+package com.example.voicerecognizerapp.Listener;
 
 public interface RecognitionResultsListener {
 
