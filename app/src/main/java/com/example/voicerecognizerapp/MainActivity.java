@@ -1,5 +1,6 @@
 package com.example.voicerecognizerapp;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -14,6 +15,8 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
 import android.util.Log;
@@ -32,14 +35,13 @@ import com.example.voicerecognizerapp.model.Item;
 import com.example.voicerecognizerapp.service.retrofit.RetrofitService;
 import com.example.voicerecognizerapp.service.retrofit.SearchService;
 import com.example.voicerecognizerapp.service.voice.VoiceRecognizerService;
+import com.example.voicerecognizerapp.ui.AnimationDrawableCallback;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import retrofit2.Retrofit;
-
-public class MainActivity extends AppCompatActivity implements RecognitionResultsListener {
+public class MainActivity extends AppCompatActivity implements RecognitionResultsListener{
     private static final String TAG = "MainActivity";
 
     private static final int VOICE_REQUEST_CODE = 123;
@@ -52,6 +54,10 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
     private ImageView ivBtRecognizer;
     private RecyclerView rvResults;
     private ResultsAdapter mAdapter;
+    private AnimationDrawable micAnimation;
+    private AnimationDrawable micAnimation2;
+    private AnimationDrawable micAnimation3;
+    private Drawable.Callback mic_call_back;
 
     private RetrofitService mRetrofitService;
     private SearchService mSearchService;
@@ -68,12 +74,29 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
         recognizerService = new VoiceRecognizerService(this,this);
         verificaPermicoes();
         recognizerService = new VoiceRecognizerService(getApplicationContext(),this);
+        ivBtRecognizer.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.mic_animation));
+        mic_call_back = new Drawable.Callback() {
+            @Override
+            public void invalidateDrawable(@NonNull Drawable drawable) {
+
+            }
+
+            @Override
+            public void scheduleDrawable(@NonNull Drawable drawable, @NonNull Runnable runnable, long l) {
+
+            }
+
+            @Override
+            public void unscheduleDrawable(@NonNull Drawable drawable, @NonNull Runnable runnable) {
+
+            }
+        };
 
 //        mRetrofitService = new RetrofitService();
 //        mSearchService = mRetrofitService.getSearchService();
         Item item = new Item();
         List<Item> items = new ArrayList<>();
-        for(int i = 0;i < 20;i++){
+        for(int i = 0;i < 4;i++){
             items.add(item);
         }
         initRv(items);
@@ -85,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
                 initVoiceRecognizer();
             }
         });
+
 
         ivBtRecognizer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -162,6 +186,24 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
     private void voiceBtAnimationState1(){
         Log.d(TAG, "voiceBtAnimation: ");
         ValueAnimator anim = ValueAnimator.ofInt(btRecognizer.getMeasuredWidth(), +400);
+        //ivBtRecognizer.setBackgroundResource(R.drawable.mic_animation);
+        ivBtRecognizer.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.mic_animation));
+        micAnimation = (AnimationDrawable) ivBtRecognizer.getDrawable();
+        micAnimation.setCallback(new AnimationDrawableCallback(micAnimation,ivBtRecognizer) {
+            @Override
+            public void onAnimationAdvanced(int currentFrame, int totalFrames) {
+
+            }
+
+            @Override
+            public void onAnimationCompleted() {
+                Log.d(TAG, "onAnimationCompleted: ");
+                micAnimation();
+            }
+        });
+        micAnimation.setOneShot(true);
+        micAnimation.start();
+
         anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
@@ -191,6 +233,16 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
         });
         anim.setDuration(DURATION);
         anim.start();
+        ivBtRecognizer.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.mic_animation3));
+        micAnimation3 = (AnimationDrawable) ivBtRecognizer.getDrawable();
+        micAnimation3.setOneShot(true);
+        micAnimation3.start();
+
+    }
+    private void micAnimation(){
+        ivBtRecognizer.setImageDrawable(ContextCompat.getDrawable(this,R.drawable.mic_animation2));
+        micAnimation2 = (AnimationDrawable) ivBtRecognizer.getDrawable();
+        micAnimation2.start();
     }
 
     @Override
@@ -208,5 +260,4 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
     private void search(String txt){
         mSearchService.search(txt);
     }
-
 }
