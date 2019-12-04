@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -19,10 +20,14 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.speech.RecognizerIntent;
+import android.transition.ChangeBounds;
+import android.transition.TransitionManager;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.SurfaceControl;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnticipateInterpolator;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
@@ -64,13 +69,15 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_main_01);
 
         rvResults = findViewById(R.id.rv_results);
         etSearch = findViewById(R.id.et_search);
-        main_layout = findViewById(R.id.main_background);
+        main_layout = findViewById(R.id.main_layout_01);
         btRecognizer = findViewById(R.id.bt_recognizer);
         ivBtRecognizer = findViewById(R.id.iv_bt_recognizer);
+
+
         recognizerService = new VoiceRecognizerService(this,this);
         verificaPermicoes();
         recognizerService = new VoiceRecognizerService(getApplicationContext(),this);
@@ -94,15 +101,11 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
 
 //        mRetrofitService = new RetrofitService();
 //        mSearchService = mRetrofitService.getSearchService();
-        Item item = new Item();
-        List<Item> items = new ArrayList<>();
-        for(int i = 0;i < 4;i++){
-            items.add(item);
-        }
-        initRv(items);
+
         btRecognizer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mainAnimation();
                 voiceBtAnimationState1();
                 btRecognizer.setClickable(false);
                 initVoiceRecognizer();
@@ -113,11 +116,16 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
         ivBtRecognizer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                mainAnimation();
                 voiceBtAnimationState1();
                 ivBtRecognizer.setClickable(false);
                 initVoiceRecognizer();
             }
         });
+
+    }
+
+    private void initViews(){
         main_layout.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
@@ -125,6 +133,26 @@ public class MainActivity extends AppCompatActivity implements RecognitionResult
                 return false;
             }
         });
+        Item item = new Item();
+        List<Item> items = new ArrayList<>();
+        for(int i = 0;i < 4;i++){
+            items.add(item);
+        }
+        initRv(items);
+    }
+
+    private void mainAnimation() {
+        Log.d(TAG, "mainAnimation: ");
+        ConstraintSet constraintSet = new ConstraintSet();
+        constraintSet.clone(this, R.layout.activity_main);
+        ConstraintLayout cc1 = findViewById(R.id.main_layout_01);
+        ChangeBounds transition = new ChangeBounds();
+        transition.setInterpolator(new AnticipateInterpolator(1.0f));
+        transition.setDuration(500);
+
+        TransitionManager.beginDelayedTransition(cc1, transition);
+        constraintSet.applyTo(cc1);
+        initViews();
     }
 
     private void initRv(List<Item> list) {
